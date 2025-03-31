@@ -1,0 +1,76 @@
+---
+title: |
+  ![](datos/uoc.png){width=8in height=1.5in}
+  Análisis de datos ómicos PEC 1
+author: "Juan Carlos Forero Niampira"
+date: "https://github.com/juanforero15/Forero-Niampira-Juan-Carlos-PEC1.git"
+output:
+   html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: 
+      toc_collapsed: yes
+    toc_depth: 3
+    theme: cosmo
+    highlight: textmate
+    number_sections: yes
+editor: 
+  markdown: 
+    wrap: 72
+self_contained: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r directorios}
+dir.create("datos")
+dir.create("resultados")
+```
+## Resumen
+
+En esta PEC se realiza una introducción a las ómicas mediante un ejercicio  que permite trabajar con algunas de las herramientas como Bioconductor y la exploración multivariante de datos. Para llevar a cabo esto, es necesario estar relacionado con las tecnologías ómicas, Bioconductor y las clases que se utilizan para almacenar datos ómicos, como
+los expressionSets y en este caso de Summarizedexperiment, Git como herramienta de control de versiones, así como GitHub.
+
+```{r cars}
+
+```
+
+## Objetivos
+
+
+El objetivo de esta PEC es que planifiquéis y ejecutéis una versión simplificada del
+proceso de análisis de datos ómicos, a la vez que practicáis con algunas de las
+herramientas y métodos que hemos trabajado durante el primer reto.
+
+
+
+## Metodos
+
+Diferenciamos básicamente dos grupos de métodos. Los métodos bioinformáticos y los estadísticos. El principal método bioinformático que se utiliza es la creación de clases contenedoras para datos de expresión,
+ExpresionSets. Los recursos para la solución de la PEC son los que se han proporcionado en el aula.
+Adionalmente de realiza en este documento un rapido aprendizaje del uso de SummarizedExperiment en vez de ExpressionSet, siguiendo como base el tutorial disponible en Bioconductor (https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html).
+
+En cuanto a los métodos estadísticos podemos diferenciar análisis uni y bivariante de los datos, mediante boxplots y/o histogramas para estudiar la forma general de los mismos y mediante correlogramas y matrices de distancias para estudiar la relación entre variables e individuos.
+
+Análisis multivariante de los datos, mediante Análisis de Componentes Principales (PCA) y Agrupamiento Jerárquico, para determinar si los grupos que aparezcan (en caso de hacerlo) parecen relacionarse con las fuentes de variabilidad del estudio o, si por el contrario, podrían haber otras fuentes de variabilidad como efectos batch.
+
+
+Los datos se Seleccionaron y descargaron desde el repositorio de GitHub (https://github.com/nutrimetabolomics/metaboData/tree/main/Datasets/2018-MetabotypingPaper), seleccionado el dataset de 2018-MetatypingPaper.
+
+
+## Resultados
+
+
+
+## Discusión
+
+## Conclusiones
+
+## Referencias
+
+
+
+
