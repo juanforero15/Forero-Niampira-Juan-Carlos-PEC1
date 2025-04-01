@@ -1637,6 +1637,157 @@ seleccionado el dataset de 2018-MetatypingPaper.</p>
 </div>
 <div id="resultados" class="section level2" number="4">
 <h2><span class="header-section-number">4</span> Resultados</h2>
+<p>En primera medida se procede a cargar los archivos, con lo cual se
+observa que l número de columnas de datos cohinciden con el número filas
+de metadatos. Por otro lado debido a que se requiere que los datos esten
+en matrices numericas, se hace necesario</p>
+<pre class="r"><code>metaDatos &lt;- read.csv(&quot;datos/DataInfo_S013.csv&quot;, row.names = 1)
+datos &lt;- read.csv(&quot;datos/DataValues_S013.csv&quot;, row.names = 1)
+class(datos)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>infoSamples &lt;- datos[, 1:5]
+if (ncol(datos) == 695) datos &lt;- datos[, -c(1:5)]
+if (nrow(metaDatos) == 695) metaDatos &lt;- metaDatos[-c(1:5), ]</code></pre>
+<pre class="r"><code>if (!require(BiocManager)) install.packages(&quot;BiocManager&quot;)</code></pre>
+<pre><code>## Loading required package: BiocManager</code></pre>
+<pre><code>## Bioconductor version &#39;3.18&#39; is out-of-date; the current release version &#39;3.20&#39;
+##   is available with R version &#39;4.4&#39;; see https://bioconductor.org/install</code></pre>
+<pre class="r"><code>if (!require(SummarizedExperiment)) BiocManager.install(&quot;SummarizedExperiment&quot;)</code></pre>
+<pre><code>## Loading required package: SummarizedExperiment</code></pre>
+<pre><code>## Loading required package: MatrixGenerics</code></pre>
+<pre><code>## Loading required package: matrixStats</code></pre>
+<pre><code>## 
+## Attaching package: &#39;MatrixGenerics&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:matrixStats&#39;:
+## 
+##     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+##     colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+##     colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+##     colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+##     colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+##     colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+##     colWeightedMeans, colWeightedMedians, colWeightedSds,
+##     colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+##     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+##     rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+##     rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+##     rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+##     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+##     rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+##     rowWeightedSds, rowWeightedVars</code></pre>
+<pre><code>## Loading required package: GenomicRanges</code></pre>
+<pre><code>## Loading required package: stats4</code></pre>
+<pre><code>## Loading required package: BiocGenerics</code></pre>
+<pre><code>## 
+## Attaching package: &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     IQR, mad, sd, var, xtabs</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+##     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+##     get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+##     match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+##     Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+##     table, tapply, union, unique, unsplit, which.max, which.min</code></pre>
+<pre><code>## Loading required package: S4Vectors</code></pre>
+<pre><code>## 
+## Attaching package: &#39;S4Vectors&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     findMatches</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     expand.grid, I, unname</code></pre>
+<pre><code>## Loading required package: IRanges</code></pre>
+<pre><code>## 
+## Attaching package: &#39;IRanges&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:grDevices&#39;:
+## 
+##     windows</code></pre>
+<pre><code>## Loading required package: GenomeInfoDb</code></pre>
+<pre><code>## Loading required package: Biobase</code></pre>
+<pre><code>## Welcome to Bioconductor
+## 
+##     Vignettes contain introductory material; view with
+##     &#39;browseVignettes()&#39;. To cite Bioconductor, see
+##     &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Biobase&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:MatrixGenerics&#39;:
+## 
+##     rowMedians</code></pre>
+<pre><code>## The following objects are masked from &#39;package:matrixStats&#39;:
+## 
+##     anyMissing, rowMedians</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:Biobase&#39;:
+## 
+##     combine</code></pre>
+<pre><code>## The following objects are masked from &#39;package:GenomicRanges&#39;:
+## 
+##     intersect, setdiff, union</code></pre>
+<pre><code>## The following object is masked from &#39;package:GenomeInfoDb&#39;:
+## 
+##     intersect</code></pre>
+<pre><code>## The following objects are masked from &#39;package:IRanges&#39;:
+## 
+##     collapse, desc, intersect, setdiff, slice, union</code></pre>
+<pre><code>## The following objects are masked from &#39;package:S4Vectors&#39;:
+## 
+##     first, intersect, rename, setdiff, setequal, union</code></pre>
+<pre><code>## The following objects are masked from &#39;package:BiocGenerics&#39;:
+## 
+##     combine, intersect, setdiff, union</code></pre>
+<pre><code>## The following object is masked from &#39;package:matrixStats&#39;:
+## 
+##     count</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code># Convertir las columnas 2 (SURGERY), 4 (GENDER) y 5 (Group) a factores
+infoSamples &lt;- infoSamples %&gt;%
+mutate(SURGERY = as.factor(SURGERY), GENDER = as.factor(GENDER), Group = as.factor(Group))
+# Crear el nuevo nombre para las filas
+infoSamples &lt;- infoSamples %&gt;%
+mutate(RowName = paste0(toupper(substr(SURGERY, 1, 1)), &quot;_&quot;, Group, &quot;_&quot;, SUBJECTS))
+rownames(infoSamples) &lt;- infoSamples$RowName
+infoSamples &lt;- infoSamples %&gt;%
+select(-RowName)
+head(infoSamples)</code></pre>
+<pre><code>##       SUBJECTS SURGERY AGE GENDER Group
+## B_1_1        1 by pass  27      F     1
+## B_2_2        2 by pass  19      F     2
+## B_1_3        3 by pass  42      F     1
+## B_2_4        4 by pass  37      F     2
+## T_1_5        5 tubular  42      F     1
+## B_2_6        6 by pass  24      F     2</code></pre>
+<pre class="r"><code>metaDatos &lt;- read.csv(&quot;datos/DataValues_S013.csv&quot;, row.names = 1)
+datos &lt;- read.csv(&quot;datos/DataInfo_S013.csv&quot;, row.names = 1)
+class(datos)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>metaDatos &lt;- read.csv(&quot;datos/DataValues_S013.csv&quot;, row.names = 1)
+datos &lt;- read.csv(&quot;datos/DataInfo_S013.csv&quot;, row.names = 1)
+class(datos)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>metaDatos &lt;- read.csv(&quot;datos/DataValues_S013.csv&quot;, row.names = 1)
+datos &lt;- read.csv(&quot;datos/DataInfo_S013.csv&quot;, row.names = 1)
+class(datos)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>metaDatos &lt;- read.csv(&quot;datos/DataValues_S013.csv&quot;, row.names = 1)
+datos &lt;- read.csv(&quot;datos/DataInfo_S013.csv&quot;, row.names = 1)
+class(datos)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>metaDatos &lt;- read.csv(&quot;datos/DataValues_S013.csv&quot;, row.names = 1)
+datos &lt;- read.csv(&quot;datos/DataInfo_S013.csv&quot;, row.names = 1)
+class(datos)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
 </div>
 <div id="discusión" class="section level2" number="5">
 <h2><span class="header-section-number">5</span> Discusión</h2>

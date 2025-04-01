@@ -5,24 +5,36 @@ title: |
 author: "Juan Carlos Forero Niampira"
 date: "https://github.com/juanforero15/Forero-Niampira-Juan-Carlos-PEC1.git"
 output:
-   html_document:
+  html_document:
     code_folding: hide
     toc: yes
     toc_float: 
-      toc_collapsed: yes
+      collapsed: yes
     toc_depth: 3
     theme: cosmo
     highlight: textmate
     number_sections: yes
-editor: 
+    self_contained: true
+    comment: NA
+    message: false
+    warning: false
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+    highlight: tango
+    latex_engine: xelatex
+editor_options: 
   markdown: 
     wrap: 72
-self_contained: true
+    comment: NA
+    message: false
+    warning: false
 
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
 ```{r directorios}
@@ -63,6 +75,92 @@ Los datos se Seleccionaron y descargaron desde el repositorio de GitHub (https:/
 
 ## Resultados
 
+En primera medida se procede a cargar los archivos, con lo cual se observa que l número de columnas de datos cohinciden con el número filas de metadatos. Por otro lado debido a que se requiere que los datos esten en matrices numericas, se hace necesario 
+```{r}
+metaDatos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
+datos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
+class(datos)
+```
+
+
+
+
+```{r}
+infoSamples <- datos[, 1:5]
+if (ncol(datos) == 695) datos <- datos[, -c(1:5)]
+if (nrow(metaDatos) == 695) metaDatos <- metaDatos[-c(1:5), ]
+```
+
+
+
+
+
+```{r}
+if (!require(BiocManager)) install.packages("BiocManager")
+if (!require(SummarizedExperiment)) BiocManager.install("SummarizedExperiment")
+```
+
+
+
+
+```{r}
+library(dplyr)
+# Convertir las columnas 2 (SURGERY), 4 (GENDER) y 5 (Group) a factores
+infoSamples <- infoSamples %>%
+mutate(SURGERY = as.factor(SURGERY), GENDER = as.factor(GENDER), Group = as.factor(Group))
+# Crear el nuevo nombre para las filas
+infoSamples <- infoSamples %>%
+mutate(RowName = paste0(toupper(substr(SURGERY, 1, 1)), "_", Group, "_", SUBJECTS))
+rownames(infoSamples) <- infoSamples$RowName
+infoSamples <- infoSamples %>%
+select(-RowName)
+head(infoSamples)
+```
+
+
+
+
+```{r}
+metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
+datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
+class(datos)
+```
+
+
+
+
+```{r}
+metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
+datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
+class(datos)
+```
+
+
+
+
+```{r}
+metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
+datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
+class(datos)
+```
+
+
+
+
+```{r}
+metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
+datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
+class(datos)
+```
+
+
+
+
+```{r}
+metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
+datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
+class(datos)
+```
 
 
 ## Discusión
