@@ -15,9 +15,6 @@ output:
     highlight: textmate
     number_sections: yes
     self_contained: true
-    comment: NA
-    message: false
-    warning: false
   pdf_document:
     toc: yes
     toc_depth: 3
@@ -26,18 +23,14 @@ output:
 editor_options: 
   markdown: 
     wrap: 72
-    comment: NA
-    message: false
-    warning: false
 
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 ```
 
-```{r directorios}
+```{r directorios, warning=FALSE, message=FALSE }
 dir.create("datos")
 dir.create("resultados")
 ```
@@ -46,9 +39,7 @@ dir.create("resultados")
 En esta PEC se realiza una introducción a las ómicas mediante un ejercicio  que permite trabajar con algunas de las herramientas como Bioconductor y la exploración multivariante de datos. Para llevar a cabo esto, es necesario estar relacionado con las tecnologías ómicas, Bioconductor y las clases que se utilizan para almacenar datos ómicos, como
 los expressionSets y en este caso de Summarizedexperiment, Git como herramienta de control de versiones, así como GitHub.
 
-```{r cars}
 
-```
 
 ## Objetivos
 
@@ -72,11 +63,15 @@ Análisis multivariante de los datos, mediante Análisis de Componentes Principa
 
 Los datos se Seleccionaron y descargaron desde el repositorio de GitHub (https://github.com/nutrimetabolomics/metaboData/tree/main/Datasets/2018-MetabotypingPaper), seleccionado el dataset de 2018-MetatypingPaper.
 
+Finalmente este documento se conecto con el repositorio con el mismo nombre, y actualizado mediante la herramienta "push" y tras previo enlace al momento de crear este proyecto y enlazado en el siguiente link: https://github.com/juanforero15/Forero-Niampira-Juan-Carlos-PEC1.git
 
 ## Resultados
 
-En primera medida se procede a cargar los archivos, con lo cual se observa que l número de columnas de datos cohinciden con el número filas de metadatos. Por otro lado debido a que se requiere que los datos esten en matrices numericas, se hace necesario 
-```{r}
+
+En primera medida se procede a cargar los archivos, con lo cual se observa que el número de columnas de datos cohinciden con el número filas de metadatos. Por otro lado debido a que se requiere que los datos esten en matrices numericas, se hace necesario en este caso que al datframe Datos en las primeras 5 columnas contienen informacion sobre los individuos. Dichos datos se suelen asignar a rowData, para lo cual se separaran los datos en 2 dataframes.
+
+
+```{r warning=FALSE, message=FALSE}
 metaDatos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
 datos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
 class(datos)
@@ -85,17 +80,19 @@ class(datos)
 
 
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 infoSamples <- datos[, 1:5]
 if (ncol(datos) == 695) datos <- datos[, -c(1:5)]
 if (nrow(metaDatos) == 695) metaDatos <- metaDatos[-c(1:5), ]
 ```
 
 
+### Creación contenedor
+
+Mediante la clase SummarizedExperiment se genera un contenedor para los datos omicos, para lo cual una vez instalado el paquete se procede a crear el contenedor. Se utilizaran 3 bloques de información siendo, los datos que iran en el rowData, la información de las variables que iran en colData. Asi pues, se convierten los datos e información de las muestras a un tipo adecuado de datos, asugnando como factores el nombre de los objeto infoSamples con nombres informativos de las filas.
 
 
-
-```{r}
+```{r warning=FALSE, message=FALSE}
 if (!require(BiocManager)) install.packages("BiocManager")
 if (!require(SummarizedExperiment)) BiocManager.install("SummarizedExperiment")
 ```
@@ -103,7 +100,7 @@ if (!require(SummarizedExperiment)) BiocManager.install("SummarizedExperiment")
 
 
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(dplyr)
 # Convertir las columnas 2 (SURGERY), 4 (GENDER) y 5 (Group) a factores
 infoSamples <- infoSamples %>%
@@ -117,57 +114,225 @@ select(-RowName)
 head(infoSamples)
 ```
 
+Posteriormente se procede de forma parecida con los datos , convirtiendo la matriz numérica nombrando las fila igual que las fila de infoSamples. Seguido de esto se crea la clase SummarizedExperiment.
 
 
-
-```{r}
-metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
-datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
-class(datos)
+```{r warning=FALSE, message=FALSE}
+matDatos <- as.matrix(datos)
+if (sum(rownames(matDatos) != infoSamples$SUBJECTS) == 0) rownames(matDatos) <- rownames(infoSamples)
 ```
 
 
 
+```{r warning=FALSE, message=FALSE}
+mySE <- SummarizedExperiment(assays = list(rawValues = matDatos), rowData = infoSamples,
+colData = metaDatos)
+show(mySE)
+```
 
-```{r}
-metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
-datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
-class(datos)
+Los metadatos (rowData y colData) pueden variar o incluso faltar entre diferentes experimentos debido a que cada experimento es único y puede requerir información complementaria distinta a lo cual se suma la falta de estandarización para definir metadatos mínimos lo que genera inconsistencias entre estudios.
+
+Por lo tanto, la diversidad experimental y la ausencia de normas claras hacen que los metadatos puedan ser  heterogéneos o incompletos.
+
+
+
+### Analisis exploratorio
+
+Metadatos
+
+En esta exploración se proporciona información de posible grupos, en este caso los datos no son balanceados pero hay de cierto modo una repartición de grupos.
+
+
+```{r warning=FALSE, message=FALSE}
+data <- rowData(mySE)[, c("SURGERY", "AGE", "GENDER", "Group")]
+# Convertir a data.frame para facilidad de manipulación
+data <- as.data.frame(data)
+# Calcular tablas de frecuencias para las columnas 1 (SURGERY), 3 (GENDER) y 4
+# (Group)
+(freq_surgery <- table(data$SURGERY))
+(freq_gender <- table(data$GENDER))
+(freq_group <- table(data$Group))
+(freq_surgery_Group <- table(data$SURGERY, data$Group))
+(freq_surgery_Group_Gender <- table(data$SURGERY, data$Group, data$GENDER))
+# Calcular el resumen numérico para la columna 2 (AGE)
+(summary_age <- summary(data$AGE))
+
+```
+
+Seguido de este paso, es importante realizar una identificación y clasificación de los valores faltantes para poder realizar e interpretar determinados análisis, con lo cual se asigna un valor mínimo teniendo en cuenta que se asume dichos valores no estan bien sea porque no se detectaron o estan ausentes. Este proceso se puede realizar utilizando el paquete naniar mediante la trasformacion en dataframe de la matriz de assay(mySE"rawValues", adicionalmente se pueden graficar las etiquetas que en este caso se ve un alto porcentaje de valores faltantes, lo cual se puede confirmar tambien mediante valores numéricos. 
+
+
+```{r warning=FALSE, message=FALSE}
+if (!require(naniar)) install.packages("naniar")
+library(naniar)
+# Visualización de valores faltantes
+dataf <- as.data.frame(t(assay(mySE, "rawValues")))
+# rownames(dataf) <- rownames(rawVals) colnames(dataf) <- colnames(rawVals)
+library(ggplot2)
+# Visualización con ajuste del tamaño de etiquetas
+vis_miss(dataf) +
+  theme_dark() +
+  theme(axis.text.x = element_text(size = 6, angle = 90, hjust = 1, color = "black"))
+# valore numericos de valores faltantes
+n_miss(dataf)
+n_complete(dataf)
+prop_miss(dataf)
+prop_complete(dataf)
+pct_miss(dataf)
+pct_complete(dataf)
 ```
 
 
+En los valores que se obtienen en metabolómica no se suelen detectar algunos valores, lo cual se soluciona asignando un 0 o 1. 
+
+```{r warning=FALSE, message=FALSE}
+rawValues <- assay(mySE, "rawValues")
+rawNoMissings <- rawValues
+rawNoMissings[is.na(rawNoMissings)] <- 1
+sum(is.na(rawNoMissings))
+```
+  
+```{r warning=FALSE, message=FALSE}
+assays(mySE)$rawNoMissings <- rawNoMissings
+show(mySE)
+```
+
+### Distribución muestra - individuos
+
+Pra observar la distribución de los individuos se procede a realizar un boxplot lo cual se hace accediendo mediante funciones de acceso y no directamente al contenedor, esto es con assay, nrow y ncol.
+
+En primer lugar observamos la distribución de cada metabolito en cada muestra donde encontramos que el rango variación es alto. Si realizamos un boxplot por muestras se tiene que la variación es inferior.
 
 
-```{r}
-metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
-datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
-class(datos)
+```{r warning=FALSE, message=FALSE}
+boxplot(assay(mySE, "rawNoMissings"), col = rainbow(ncol(mySE), alpha = 0.6), ylab = "Concentraciones", cex.lab = 0.7, horizontal = FALSE, cex.axis = 0.3, las = 2, main = "Distribucion de valores por metabolito", cex.main = 0.7, border = "blue")
+```
+
+```{r warning=FALSE, message=FALSE}
+boxplot(t(assay(mySE, "rawNoMissings")), col=heat.colors(ncol(assay(mySE))), xlab = "Muestra", ylab = "Concentraciones", cex.lab = 0.8, horizontal = FALSE, cex.axis = 0.6, las = 2, main = "Distribucion de los valores", cex.main = 0.8, border = "blue")
+```
+
+### Trasformación datos
+
+Debido a la alta variación es posible simetrizar los datos mediante logaritmos y el cual puede ser aplicado en el contendor.
+
+
+```{r warning=FALSE, message=FALSE}
+logNoMissings <- log(assay(mySE, "rawNoMissings"))
+assays(mySE)$logNoMissings <- logNoMissings
+show(mySE)
+```
+
+Para verificar la diferencia despues de la trasformación, que en este caso tienen un efecto positivo en cuanto a la simetria sin embargo es importante tener en cuenta aquellas muestras con valores perdidos que tienen los peores resultados.
+
+```{r warning=FALSE, message=FALSE}
+boxplot(assay(mySE, "logNoMissings"), ylab = "logConcentraciones", cex.lab = 0.7,
+horizontal = FALSE, cex.axis = 0.3, las = 1, main = "Distribucion de los logvalores por metabolito",
+cex.main = 0.8, border = "blue")
+```
+
+```{r warning=FALSE, message=FALSE}
+boxplot(t(assay(mySE, "logNoMissings")), col=heat.colors(ncol(assay(mySE))), xlab = "Muestra", ylab = "log-Concentraciones",
+cex.lab = 0.7, horizontal = FALSE, cex.axis = 0.5, las = 1, main = "Distribucion de los log", cex.main = 0.7)
+```
+
+Visualización indiviuos/variables
+
+Una forma eficiente de visualizar los datos es mediante un mapa de calor
+
+```{r warning=FALSE, message=FALSE}
+if (!require(pheatmap)) install.packages("pheatmap")
+library(pheatmap)
+# Heatmap sin clustering
+pheatmap(t(assay(mySE, "rawNoMissings")), cluster_rows = FALSE, cluster_cols = FALSE, main = "Heatmap sin Clustering", fontsize_row = 4, fontsize_col = 7, color = colorRampPalette(c("white", "red"))(200))
+
+# Heatmap sin clustering
+pheatmap(t(assay(mySE, "rawValues")), cluster_rows = FALSE, cluster_cols = TRUE, main = "Heatmap sin Clustering", fontsize_row = 4, fontsize_col = 7, color = colorRampPalette(c("white", "red"))(200))
 ```
 
 
+### Análisis de componentes principales
+
+Para realizar este análisis se empleará el paquete PCAtools para lo cual se requiere un dataframe con datos numéricos y otra con metadatos. Se extrae la matriz de datos de rawNoMissings del objeto SummarizedExperiment (mySE), que contiene los datos de expresión. Posteriormente se transpone la matriz intercambiando filas por columnas). Se espera que las filas = muestras y que las columnas = variables (genes, metabolitos...)
 
 
-```{r}
-metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
-datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
-class(datos)
+```{r warning=FALSE, message=FALSE}
+if (!require(PCAtools)) BiocManager::install("PCAtools", dep = TRUE)
 ```
 
 
-
-
-```{r}
-metaDatos <- read.csv("datos/DataValues_S013.csv", row.names = 1)
-datos <- read.csv("datos/DataInfo_S013.csv", row.names = 1)
-class(datos)
+```{r warning=FALSE, message=FALSE}
+library(PCAtools)
+matriz <- t(assay(mySE, "rawNoMissings"))
+pclas <- pca(matriz, metadata = rowData(mySE), removeVar = 0.1)
+class(pclas)
 ```
+
+Podemos explorar los datos utilizando el objeto pclas como base, siguiendo las indicaciones de la viñeta del paquete.
+
+Para esto se evalua la importancia de cada componente principal mediante la función screeplot(), la cual visualiza el porcentaje de variabilidad que explica cada componente.
+
+
+```{r warning=FALSE, message=FALSE}
+screeplot(pclas, axisLabSize = 10, titleLabSize = 1)
+```
+
+El gráfico revela que los dos primeros componentes principales capturan aproximadamente el 50% de la variabilidad total de los datos. Esto indica que las 2-3 primeras componentes son adecuadas para representar la estructura fundamental de los datosya que proporcionan una visión suficientemente informativa sin necesidad de considerar componentes adicionales.
+
+```{r warning=FALSE, message=FALSE}
+biplot(pclas, showLoadings = FALSE, labSize = 2, pointSize = 2, axisLabSize = 6, title = "PCA datos" , sizeLoadingsNames = 2, colby = "SURGERY", hline = 0, vline = 0, legendPosition = "right")
+```
+
+En este gráfico se muestra que al diferenciar las muestras según la variable "SURGERY" incluida en los metadatos, se aprecia cierta distinción a lo largo del primer componente principal (PC1). Sin embargo, esta separación no es completa, debido a que algunos puntos de diferentes grupos aparecen superpuestos. La tendencia se visualiza con mayor claridad cuando se añaden elipses de confianza alrededor de cada grupo, las cuales ayudan a delimitar los espacios que ocupan mayoritariamente las muestras de cada categoría.
+
+
+
+```{r warning=FALSE, message=FALSE}
+biplot(pclas, showLoadings = FALSE, labSize = 2, pointSize = 2, axisLabSize = 6, ellipse = TRUE,
+title = "PCA de los datos", sizeLoadingsNames = 3, colby = "SURGERY", hline = 0,
+vline = 0, legendPosition = "right")
+```
+
+
+```{r warning=FALSE, message=FALSE}
+biplot(pclas, showLoadings = TRUE, labSize = 2, pointSize = 1, axisLabSize = 6, title = "PCA datos", sizeLoadingsNames = 2, colby = "SURGERY", lab = NULL, hline = 0, vline = 0, legendPosition = "right") 
+```
+
+Este análisis nos revela que diversos metabolitos muestran una clara asociación con valores extremos altos o bajos, específicamente en el segundo componente principal, pero no presentan esta misma relación con el primer componente.Esta distribución diferencial puede visualizarse mediante un gráfico de cargas loadings que muestra el peso específico de cada variable en la formación de los componentes principales, destacando metabolitos con mayor contribución a PC2 y la ausencia de esta misma influencia en PC1
+
+
 
 
 ## Discusión
 
-## Conclusiones
+Calidad de Datos y Preprocesamiento.
+
+En este análisi se tuvo la presencia de un 12.6% de valores faltantes en un dataset de metabolómica con 690 variables con lo cual, si los NA reflejan límites técnicos de detección, la imputación a un valor mínimo (1) es una aproximación aceptable pero subóptima. Se tendria que valorar otros métodos que preserven mejor la estructura estadística de los datos.
+
+Respecto a la heterogeneidad observada podría estar inflada por efecto batch dado por lotes experimentales, días de procesamiento entre otros.
+
+Transformación de Datos y Estabilidad de Resultados.
+
+Dada la asimetria en los datos, aplicar una transformación logarítmica es una estrategia acertada aunque es importante valorar si existen valores cero o negativos que requieran ajustes.
+
+
+Resultados del PCA.
+
+La separación parcial por tipo de "SURGERY" puede entenderse a razón de respuestas metabólicas individuales a la cirugía moduladas por factores genéticos o epigenéticos o bien por la variabilidad introducida durante la adquisición de datos.
+
+
 
 ## Referencias
+
+https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html)
+
+https://github.com/ASPteaching/Analisis_de_datos_omicos-Ejemplo_0-Microarrays
+
+https://github.com/ASPteaching/Analisis_de_datos_omicos-Ejemplo_1-Microarrays
+
+https://www.metabolomicsworkbench.org/
+
+https://www.bioconductor.org/packages/release/bioc/html/POMA.html
 
 
 
