@@ -15,15 +15,9 @@ output:
     highlight: textmate
     number_sections: yes
     self_contained: true
-  pdf_document:
-    toc: yes
-    toc_depth: 3
-    highlight: tango
-    latex_engine: xelatex
 editor_options: 
   markdown: 
     wrap: 72
-
 ---
 
 ```{r setup, include=FALSE}
@@ -32,7 +26,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r directorios, warning=FALSE, message=FALSE }
 dir.create("datos")
-dir.create("resultados")
 ```
 ## Resumen
 
